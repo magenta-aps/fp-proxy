@@ -1,0 +1,27 @@
+<html>
+<body>
+<ul>
+  {% for committee_name, subcommittees in response.Udvalg|items %}
+  <li>
+    <p>
+      {{ committee_name }}
+      {% for subcommittee in subcommittees %}
+        {% set subcommittee_name = subcommittee.Navn %}
+      <ul>
+        <li>
+          <p>
+            {{ subcommittee_name }}
+            <ul>
+            {% for meeting in subcommittee.Moeder %}
+              <li>
+                <a href="meeting/{{ meeting.Id }}">{{ meeting.Dato }}</a>
+              </li>
+            {% endfor %}
+            </ul>
+      </ul>
+      {% endfor %}
+  </li>
+  {% endfor %}
+</ul>
+</body>
+</html>

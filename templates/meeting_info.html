@@ -1,0 +1,34 @@
+<html>
+<body>
+<h1>
+  {{ response.Moede.Navn }}
+</h1>
+<ul>
+  {% for agenda_point in response.Dagsordenpunkter %}
+  <li>
+    {% if agenda_point.Caption %}
+    <h2>
+      {{ agenda_point.Caption }}
+    </h2>
+    {% endif %}
+
+    {% if agenda_point.Felter.0.Html %}
+    <div>
+      {{ agenda_point.Felter.0.Html|safe }}
+    </div>
+    {% endif %}
+
+    {% if agenda_point.Bilag %}
+    <ol>
+      {% for attachment in agenda_point.Bilag %}
+        <li>
+          <a href="/meeting/{{ meeting_id }}/attachment/pdf/{{ attachment.Id }}">{{ attachment.Navn }}</a>
+        </li>
+      {% endfor %}
+    </ol>
+    {% endif %}    
+  </li>
+  {% endfor %}
+</ul>
+</body>
+</html>
