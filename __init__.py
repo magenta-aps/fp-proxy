@@ -11,6 +11,11 @@ app = Flask(__name__)
 INSTANCE = "https://dagsordener.randers.dk/"
 
 
+@app.template_filter()
+def datetimeformat(string):
+    return parse_datetime(string).strftime("%d/%m-%Y")
+
+
 def get_first_path(d, *paths, processor=None):
     for path in paths:
         here = d
@@ -32,47 +37,48 @@ def get_first_path(d, *paths, processor=None):
 @app.route("/meetings")
 def list_meetings():
     committees = get(
-            parse.urljoin(INSTANCE, "api/agenda/udvalgsliste")).json()
+        parse.urljoin(INSTANCE, "api/agenda/udvalgsliste")).json()
     return render_template("meeting_list.html", response=committees)
 
 
 @app.route("/meeting/<uuid:meeting>")
 def list_points(meeting):
     points = get(
-            parse.urljoin(
-                    INSTANCE,
-                    f"api/agenda/dagsorden/{meeting}?"
-                    "request.select={}")).json()
+        parse.urljoin(
+            INSTANCE,
+            f"api/agenda/dagsorden/{meeting}?"
+            "request.select={}")).json()
     response = make_response(
-            render_template(
-                    "meeting_info.html",
-                    meeting_id=meeting, instance=INSTANCE, response=points))
+        render_template(
+            "meeting_info.html",
+            meeting_id=meeting, instance=INSTANCE, response=points))
     timestamp = get_first_path(
-            points["Moede"],
-            ("ReleasedDate",), ("Dato",),
-            processor=lambda ts: parse_datetime(ts).timestamp())
+        points["Moede"],
+        ("ReleasedDate",), ("Dato",),
+        processor=lambda ts: parse_datetime(ts).timestamp())
     if timestamp is not None:
         response.headers["Last-Modified"] = format_date_time(timestamp)
+    # print(json.dumps(points, indent=True))
     return response
 
 
 @app.route(
-        "/meeting/<uuid:meeting>/attachment/pdf/<uuid:document_id>",
-        methods=["HEAD"])
+    "/meeting/<uuid:meeting>/attachment/pdf/<uuid:document_id>",
+    methods=["HEAD"])
 def head_pdf(meeting, document_id):
     # document_id is enough to get the PDF file, but it's not enough to get its
     # metadata (the server doesn't support HEAD requests to objects under
     # /Vis/Pdf/bilag/). We retrieve that from the meeting instead
     points = get(
-            parse.urljoin(
-                    INSTANCE,
-                    f"api/agenda/dagsorden/{meeting}?"
-                    "request.select={}")).json()
+        parse.urljoin(
+            INSTANCE,
+            f"api/agenda/dagsorden/{meeting}?"
+            "request.select={}")).json()
     response = make_response()
     timestamp = get_first_path(
-            points["Moede"],
-            ("ReleasedDate",), ("Dato",),
-            processor=lambda ts: parse_datetime(ts).timestamp())
+        points["Moede"],
+        ("ReleasedDate",), ("Dato",),
+        processor=lambda ts: parse_datetime(ts).timestamp())
     if timestamp is not None:
         response.headers["Content-Type"] = "application/pdf"
         response.headers["Last-Modified"] = format_date_time(timestamp)
@@ -80,14 +86,14 @@ def head_pdf(meeting, document_id):
 
 
 @app.route(
-        "/meeting/<uuid:meeting>/attachment/pdf/<uuid:document_id>",
-        methods=["GET"])
+    "/meeting/<uuid:meeting>/attachment/pdf/<uuid:document_id>",
+    methods=["GET"])
 def get_pdf(meeting, document_id):
     document = get(
-            parse.urljoin(
-                    INSTANCE,
-                    f"Vis/Pdf/bilag/{document_id}?redirectDirectlyToPdf=true"),
-            stream=True)
+        parse.urljoin(
+            INSTANCE,
+            f"Vis/Pdf/bilag/{document_id}?redirectDirectlyToPdf=true"),
+        stream=True)
     response = make_response(document.raw)
     for key in (
             "Content-Disposition", "Content-Length",
