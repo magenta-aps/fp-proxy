@@ -37,7 +37,7 @@ def get_first_path(d, *paths, processor=None):
 @app.route("/meetings")
 def list_meetings():
     committees = get(
-        parse.urljoin(INSTANCE, "api/agenda/udvalgsliste")).json()
+            parse.urljoin(INSTANCE, "api/agenda/udvalgsliste")).json()
     return render_template("meeting_list.html", response=committees)
 
 
