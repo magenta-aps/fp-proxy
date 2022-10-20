@@ -13,8 +13,9 @@
             {{ subcommittee_name }}
             <ul>
             {% for meeting in subcommittee.Moeder %}
+            {% set place = meeting.Sted %}
               <li>
-                <a href="meeting/{{ meeting.Id }}">{{ meeting.Dato }}</a>
+                <a href="meeting/{{ meeting.Id }}">{{ place }} den {{ meeting.Dato|datetimeformat }}</a>
               </li>
             {% endfor %}
             </ul>
