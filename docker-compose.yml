@@ -5,6 +5,8 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile
+    environment:
+      - FPP_SERVER_URL=https://dagsordener.randers.dk/
     volumes:
       - ./src:/code/src
     ports:

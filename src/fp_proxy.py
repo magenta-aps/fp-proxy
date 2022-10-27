@@ -1,14 +1,21 @@
-import json
-from flask import Flask, send_file, make_response, render_template
+from os import getenv
+from flask import Flask, make_response, render_template
 from urllib import parse
 from wsgiref.handlers import format_date_time
-from datetime import datetime
 from dateutil.parser import parse as parse_datetime
-from requests import get, head
+from requests import get
+from functools import cache
 
 
 app = Flask(__name__)
-INSTANCE = "https://dagsordener.randers.dk/"
+
+
+@cache
+def get_instance():
+    instance = getenv("FPP_SERVER_URL")
+    if instance is None:
+        raise KeyError("FPP_SERVER_URL")
+    return instance
 
 
 @app.template_filter()
@@ -16,7 +23,7 @@ def datetimeformat(string):
     return parse_datetime(string).strftime("%d/%m-%Y")
 
 
-def get_first_path(d, *paths, processor=None):
+def get_first_path(d, *paths, processor=None):  # noqa: CCR001
     for path in paths:
         here = d
         for component in path:
@@ -36,22 +43,26 @@ def get_first_path(d, *paths, processor=None):
 @app.route("/")
 @app.route("/meetings")
 def list_meetings():
+    instance = get_instance()
+
     committees = get(
-            parse.urljoin(INSTANCE, "api/agenda/udvalgsliste")).json()
+            parse.urljoin(instance, "api/agenda/udvalgsliste")).json()
     return render_template("meeting_list.html", response=committees)
 
 
 @app.route("/meeting/<uuid:meeting>")
 def list_points(meeting):
+    instance = get_instance()
+
     points = get(
             parse.urljoin(
-                    INSTANCE,
+                    instance,
                     f"api/agenda/dagsorden/{meeting}?"
                     "request.select={}")).json()
     response = make_response(
             render_template(
                     "meeting_info.html",
-                    meeting_id=meeting, instance=INSTANCE, response=points))
+                    meeting_id=meeting, instance=instance, response=points))
     timestamp = get_first_path(
             points["Moede"],
             ("ReleasedDate",), ("Dato",),
@@ -66,12 +77,14 @@ def list_points(meeting):
         "/meeting/<uuid:meeting>/attachment/pdf/<uuid:document_id>",
         methods=["HEAD"])
 def head_pdf(meeting, document_id):
+    instance = get_instance()
+
     # document_id is enough to get the PDF file, but it's not enough to get its
     # metadata (the server doesn't support HEAD requests to objects under
     # /Vis/Pdf/bilag/). We retrieve that from the meeting instead
     points = get(
             parse.urljoin(
-                    INSTANCE,
+                    instance,
                     f"api/agenda/dagsorden/{meeting}?"
                     "request.select={}")).json()
     response = make_response()
@@ -89,9 +102,11 @@ def head_pdf(meeting, document_id):
         "/meeting/<uuid:meeting>/attachment/pdf/<uuid:document_id>",
         methods=["GET"])
 def get_pdf(meeting, document_id):
+    instance = get_instance()
+
     document = get(
             parse.urljoin(
-                    INSTANCE,
+                    instance,
                     f"Vis/Pdf/bilag/{document_id}?redirectDirectlyToPdf=true"),
             stream=True)
     response = make_response(document.raw)
