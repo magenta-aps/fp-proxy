@@ -34,8 +34,6 @@ variables:
   image:
     name: gcr.io/kaniko-project/executor:v1.6.0-debug
     entrypoint: [""]
-  tags:
-    - docker
 
 Build:
   <<: *build-default
@@ -54,8 +52,6 @@ Build:
   image: alpine
   variables:
     GIT_STRATEGY: none # We do not need the source code
-  tags:
-    - docker
 
 # Versioned release:
 .release: &release
