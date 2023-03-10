@@ -18,10 +18,24 @@
     </h2>
     {% endif %}
 
-    {% if agenda_point.Felter.0.Html %}
+    {% if agenda_point.Felter %}
+      {% for field in agenda_point.Felter %}
     <div>
-      {{ agenda_point.Felter.0.Html|safe }}
+      {% if field.Html %}
+        {{ field.Html|safe }}
+      {% elif field.Tekst %}
+        {{ field.Tekst }}
+      {% endif %}
     </div>
+      {% if field.DocumentId
+            and field.DocumentId != "00000000-0000-0000-0000-000000000000" %}
+      {# All-zero document IDs appear to be an indication that a document
+         exists, but has been sealed from publication #}
+    <div>
+      <a href="/meeting/{{ meeting_id }}/attachment/pdf/{{ field.DocumentId }}">{{ field.DocumentId }}</a>
+    </div>
+      {% endif %}
+      {% endfor %}
     {% endif %}
 
     {% if agenda_point.Bilag %}
