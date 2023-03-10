@@ -1,4 +1,10 @@
+<!doctype html>
 <html>
+<head>
+<title>
+  {% for agenda_point in response.Dagsordenpunkter %}{% if agenda_point.Caption %}{{ agenda_point.Caption.strip() }}{% if not loop.last %}; {% endif %}{% endif %}{% endfor %}
+</title>
+</head>
 <body>
 <h1>
   {{ response.Moede.Navn }}
