@@ -47,7 +47,9 @@ def list_meetings():
 
     committees = get(
             parse.urljoin(instance, "api/agenda/udvalgsliste")).json()
-    return render_template("meeting_list.html", response=committees)
+    return render_template(
+            "meeting_list.html",
+            response=committees, instance=instance)
 
 
 @app.route("/meeting/<uuid:meeting>")
@@ -69,7 +71,6 @@ def list_points(meeting):
             processor=lambda ts: parse_datetime(ts).timestamp())
     if timestamp is not None:
         response.headers["Last-Modified"] = format_date_time(timestamp)
-    # print(json.dumps(points, indent=True))
     return response
 
 

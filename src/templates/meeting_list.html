@@ -16,12 +16,13 @@
       <ul>
         <li>
           <p>
-            {{ subcommittee_name }}
+            Udvalg: <b>{{ subcommittee_name }}</b>
             <ul>
             {% for meeting in subcommittee.Moeder %}
             {% set place = meeting.Sted %}
               <li>
-                <a href="meeting/{{ meeting.Id }}">{{ place }} den {{ meeting.Dato|datetimeformat }}</a>
+                Møde: <a href="meeting/{{ meeting.Id }}"
+                        data-true-url="{{ instance }}vis?id={{ meeting.Id }}">{{ place }} den {{ meeting.Dato|datetimeformat }}</a>
               </li>
             {% endfor %}
             </ul>

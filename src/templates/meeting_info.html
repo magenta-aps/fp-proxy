@@ -32,17 +32,22 @@
       {# All-zero document IDs appear to be an indication that a document
          exists, but has been sealed from publication #}
     <div>
-      <a href="/meeting/{{ meeting_id }}/attachment/pdf/{{ field.DocumentId }}">{{ field.DocumentId }}</a>
+      <a href="/meeting/{{ meeting_id }}/attachment/pdf/{{ field.DocumentId }}"
+            data-true-url="{{ instance }}vis/pdf/bilag/{{ field.DocumentId }}?redirectDirectlyToPdf=false">{{ field.DocumentId }}</a>
     </div>
       {% endif %}
       {% endfor %}
     {% endif %}
 
     {% if agenda_point.Bilag %}
+    <h3>
+      Bilag
+    </h3>
     <ol>
       {% for attachment in agenda_point.Bilag %}
         <li>
-          <a href="/meeting/{{ meeting_id }}/attachment/pdf/{{ attachment.Id }}">{{ attachment.Navn }}</a>
+          <a href="/meeting/{{ meeting_id }}/attachment/pdf/{{ attachment.Id }}"
+                  data-true-url="{{ instance }}vis/pdf/bilag/{{ attachment.Id }}?redirectDirectlyToPdf=false">{{ attachment.Navn or "Vedhæftet fil" }}</a>
         </li>
       {% endfor %}
     </ol>
