@@ -1,4 +1,11 @@
+<!doctype html>
 <html>
+<head>
+<meta charset="utf-8">
+<title>
+  {% for agenda_point in response.Dagsordenpunkter %}{% if agenda_point.Caption %}{{ agenda_point.Caption.strip() }}{% if not loop.last %}; {% endif %}{% endif %}{% endfor %}
+</title>
+</head>
 <body>
 <h1>
   {{ response.Moede.Navn }}
@@ -12,17 +19,36 @@
     </h2>
     {% endif %}
 
-    {% if agenda_point.Felter.0.Html %}
+    {% if agenda_point.Felter %}
+      {% for field in agenda_point.Felter %}
     <div>
-      {{ agenda_point.Felter.0.Html|safe }}
+      {% if field.Html %}
+        {{ field.Html|safe }}
+      {% elif field.Tekst %}
+        {{ field.Tekst }}
+      {% endif %}
     </div>
+      {% if field.DocumentId
+            and field.DocumentId != "00000000-0000-0000-0000-000000000000" %}
+      {# All-zero document IDs appear to be an indication that a document
+         exists, but has been sealed from publication #}
+    <div>
+      <a href="/meeting/{{ meeting_id }}/attachment/pdf/{{ field.DocumentId }}"
+            data-true-url="{{ instance }}vis/pdf/bilag/{{ field.DocumentId }}?redirectDirectlyToPdf=false">{{ field.DocumentId }}</a>
+    </div>
+      {% endif %}
+      {% endfor %}
     {% endif %}
 
     {% if agenda_point.Bilag %}
+    <h3>
+      Bilag
+    </h3>
     <ol>
       {% for attachment in agenda_point.Bilag %}
         <li>
-          <a href="/meeting/{{ meeting_id }}/attachment/pdf/{{ attachment.Id }}">{{ attachment.Navn }}</a>
+          <a href="/meeting/{{ meeting_id }}/attachment/pdf/{{ attachment.Id }}"
+                  data-true-url="{{ instance }}vis/pdf/bilag/{{ attachment.Id }}?redirectDirectlyToPdf=false">{{ attachment.Navn or "Vedhæftet fil" }}</a>
         </li>
       {% endfor %}
     </ol>
